@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Otimizador de Currículos ATS Friendly</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN with configuration -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- html2pdf.js for ATS Resume PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="min-h-full font-sans text-slate-800 antialiased flex flex-col justify-between selection:bg-blue-100 selection:text-blue-800">
+
+  <!-- ===================================================================== -->
+  <!-- 2. REGRA DE NEGÓCIO: BANNER / DISCLAIMER FIXO E VISÍVEL NA INTERFACE  -->
+  <!-- ===================================================================== -->
+  <div id="disclaimer-banner" class="sticky top-0 z-50 bg-amber-50/95 backdrop-blur border-b border-amber-200 px-4 py-2.5 shadow-xs transition-all">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3 text-xs sm:text-sm text-amber-900 font-medium">
+      <div class="flex items-center gap-2.5">
+        <span class="inline-flex items-center justify-center p-1 rounded-full bg-amber-100 text-amber-800 shrink-0">
+          <i data-lucide="shield-alert" class="w-4 h-4"></i>
+        </span>
+        <p>
+          <strong class="font-semibold text-amber-950">Aviso Ético:</strong>
+          "Esta ferramenta melhora a forma como você se apresenta, mas nunca inventa experiências que você não tem."
+        </p>
+      </div>
+      <span class="hidden md:inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded">
+        <i data-lucide="check-check" class="w-3.5 h-3.5"></i> 100% Anti-Alucinação
+      </span>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1 flex flex-col">
+
+    <!-- =================================================================== -->
+    <!-- 3. CABEÇALHO: LOGO SIMPLES E O TÍTULO DA APLICAÇÃO                  -->
+    <!-- =================================================================== -->
+    <header class="mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-6">
+        <div class="flex items-center gap-3.5">
+          <div class="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+            <i data-lucide="file-check-2" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              Otimizador de Currículos <span class="text-blue-600">ATS Friendly</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-500 font-normal mt-0.5">
+              Alinhe seu currículo com sistemas de triagem automática sem criar informações falsas.
+            </p>
+          </div>
+        </div>
+
+        <!-- Quick Action Buttons: Load Demo & Clear -->
+        <div class="flex items-center gap-2 self-start sm:self-center">
+          <button
+            id="btn-load-demo"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg shadow-2xs transition-colors cursor-pointer"
+            title="Preencher com um exemplo para testar"
+          >
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-600"></i>
+            Carregar Exemplo
+          </button>
+          <button
+            id="btn-clear"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg shadow-2xs transition-colors cursor-pointer"
+            title="Limpar campos"
+          >
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            Limpar
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- =================================================================== -->
+    <!-- 3. ÁREA DE INPUT: DOIS CAMPOS DE TEXTO LADO A LADO EM TELAS GRANDES -->
+    <!-- =================================================================== -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8" aria-label="Campos de Entrada">
+      
+      <!-- Campo 1: Descrição da Vaga -->
+      <div class="bg-white rounded-lg border border-slate-200 shadow-xs p-5 flex flex-col justify-between transition-shadow hover:shadow-md">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label for="job-description" class="text-sm font-semibold text-slate-800 flex items-center gap-2">
+              <i data-lucide="briefcase" class="w-4 h-4 text-blue-600"></i>
+              Descrição da Vaga
+              <span class="text-xs text-rose-500 font-normal">*</span>
+            </label>
+            <span id="job-word-count" class="text-xs text-slate-400 font-mono">0 palavras</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-3">
+            Cole aqui os requisitos, qualificações e responsabilidades da vaga desejada.
+          </p>
+          <textarea
+            id="job-description"
+            rows="12"
+            class="w-full text-sm text-slate-800 bg-slate-50/50 hover:bg-slate-50 focus:bg-white border border-slate-200 rounded-lg p-3.5 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all placeholder:text-slate-400 font-sans resize-y leading-relaxed"
+            placeholder="Exemplo:
+Buscamos Desenvolvedor(a) Frontend Pleno com sólida experiência em React, TypeScript e Tailwind CSS.
+Requisitos:
+- 3+ anos com React.js e ecossistema moderno
+- Conhecimento em consumo de APIs RESTful e GraphQL
+- Vivência com metodologias ágeis (Scrum/Kanban)
+- Testes unitários com Jest e Cypress
+- Inglês intermediário a avançado"
+          ></textarea>
+        </div>
+        <div class="mt-3 flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-100">
+          <span>Dica: Inclua requisitos técnicos e comportamentais</span>
+          <span class="text-blue-600/80 font-medium">ATS Keyword Target</span>
+        </div>
+      </div>
+
+      <!-- Campo 2: Seu Currículo -->
+      <div class="bg-white rounded-lg border border-slate-200 shadow-xs p-5 flex flex-col justify-between transition-shadow hover:shadow-md">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label for="user-resume" class="text-sm font-semibold text-slate-800 flex items-center gap-2">
+              <i data-lucide="file-user" class="w-4 h-4 text-blue-600"></i>
+              Seu Currículo Atual
+              <span class="text-xs text-rose-500 font-normal">*</span>
+            </label>
+            <span id="resume-word-count" class="text-xs text-slate-400 font-mono">0 palavras</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-3">
+            Cole aqui o texto do seu currículo atual (resumo, experiências, projetos e habilidades).
+          </p>
+          <textarea
+            id="user-resume"
+            rows="12"
+            class="w-full text-sm text-slate-800 bg-slate-50/50 hover:bg-slate-50 focus:bg-white border border-slate-200 rounded-lg p-3.5 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all placeholder:text-slate-400 font-sans resize-y leading-relaxed"
+            placeholder="Exemplo:
+Maria Silva - Desenvolvedora Frontend
+Contato: maria@exemplo.com | LinkedIn: /in/mariasilva
+
+Resumo:
+Desenvolvedora de software com 3 anos de experiência criando interfaces interativas. Apaixonada por usabilidade e código limpo.
+
+Experiência Profissional:
+TechCorp (2022 - Atual) - Desenvolvedora Front-end
+- Desenvolvimento de aplicações web com React e JavaScript
+- Estilização com Tailwind CSS e CSS Modules
+- Integração com endpoints REST
+- Participação em reuniões diárias e planejamento em equipe ágil (Scrum)
+
+Habilidades: React, JavaScript, HTML5, CSS3, Tailwind CSS, Git, Scrum, REST APIs.
+Formação: Análise e Desenvolvimento de Sistemas (2022)"
+          ></textarea>
+        </div>
+        <div class="mt-3 flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-100">
+          <span>Suas informações reais e verdadeiras</span>
+          <span class="text-emerald-600/90 font-medium">Base Verificada</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 3. BOTÃO DE AÇÃO: CENTRALIZADO, CHAMATIVO, "ANALISAR E OTIMIZAR"     -->
+    <!-- =================================================================== -->
+    <div class="flex flex-col items-center justify-center mb-10">
+      <button
+        id="btn-analyze"
+        type="button"
+        class="inline-flex items-center justify-center gap-3 px-8 py-3.5 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-md hover:shadow-lg hover:shadow-blue-600/25 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none group"
+      >
+        <i data-lucide="wand-2" class="w-5 h-5 transition-transform group-hover:rotate-12"></i>
+        <span>Analisar e Otimizar</span>
+      </button>
+      <p id="input-validation-msg" class="text-xs text-rose-500 mt-2.5 hidden font-medium flex items-center gap-1">
+        <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+        Por favor, preencha tanto a Descrição da Vaga quanto o Seu Currículo para prosseguir.
+      </p>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 4. FLUXO DE INTERAÇÃO: ESTADO DE LOADING / ESQUELETO DE CARREGAMENTO-->
+    <!-- =================================================================== -->
+    <section id="loading-state" class="hidden my-8 p-8 bg-white border border-slate-200 rounded-lg shadow-sm" aria-live="polite">
+      <div class="max-w-xl mx-auto flex flex-col items-center text-center">
+        <!-- Spinner & Animation -->
+        <div class="relative w-16 h-16 mb-4 flex items-center justify-center">
+          <div class="absolute inset-0 rounded-full border-4 border-blue-100"></div>
+          <div class="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+          <i data-lucide="scan-search" class="w-6 h-6 text-blue-600 animate-pulse"></i>
+        </div>
+
+        <h3 id="loading-title" class="text-lg font-bold text-slate-800">
+          Analisando compatibilidade com o ATS...
+        </h3>
+        <p id="loading-subtitle" class="text-sm text-slate-500 mt-1">
+          Identificando palavras-chave, conferindo regras de formatação e organizando seções.
+        </p>
+
+        <!-- Skeleton placeholders -->
+        <div class="w-full mt-6 space-y-3">
+          <div class="h-3 bg-slate-200 rounded-full animate-pulse w-3/4 mx-auto"></div>
+          <div class="h-3 bg-slate-100 rounded-full animate-pulse w-5/6 mx-auto"></div>
+          <div class="h-3 bg-slate-200 rounded-full animate-pulse w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 3. ÁREA DE RESULTADOS (OCULTA ATÉ A ANÁLISE SER FEITA)               -->
+    <!-- =================================================================== -->
+    <section id="results-area" class="hidden space-y-8 pb-12 transition-all duration-500" aria-label="Resultados da Análise">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 pb-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="sparkle" class="w-5 h-5 text-blue-600"></i>
+            Relatório de Diagnóstico & Currículo Otimizado
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Baseado em conformidade ATS (Applicant Tracking System), densidade de palavras-chave e legibilidade.
+          </p>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold self-start sm:self-auto">
+          <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Análise Concluída
+        </div>
+      </div>
+
+      <!-- Top Row: Score de Match + Palavras-Chave (Cards Encontradas e Faltantes) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- * Score de Match: Gráfico circular mostrando porcentagem de compatibilidade * -->
+        <div class="lg:col-span-4 bg-white rounded-lg border border-slate-200 shadow-sm p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="gauge" class="w-4 h-4 text-blue-600"></i>
+                Score de Match ATS
+              </h3>
+              <span id="score-badge" class="px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+                Inicial
+              </span>
+            </div>
+
+            <!-- Circular Progress Indicator -->
+            <div class="flex flex-col items-center justify-center my-4">
+              <div class="relative w-40 h-40 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                  <!-- Background Circle -->
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke-width="9"
+                    stroke="#e2e8f0"
+                    fill="transparent"
+                  />
+                  <!-- Animated Score Circle -->
+                  <circle
+                    id="score-circle"
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke-width="9"
+                    stroke="#2563eb"
+                    stroke-dasharray="251.2"
+                    stroke-dashoffset="251.2"
+                    stroke-linecap="round"
+                    fill="transparent"
+                    class="transition-all duration-1000 ease-out"
+                  />
+                </svg>
+                <!-- Percentage Number in center -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span id="score-number" class="text-4xl font-extrabold text-slate-900 tracking-tight">0%</span>
+                  <span id="score-label" class="text-xs text-slate-500 font-medium mt-0.5">Compatibilidade</span>
+                </div>
+              </div>
+
+              <p id="score-evaluation" class="text-xs text-center text-slate-600 mt-2 max-w-xs leading-relaxed">
+                Calculando correlação entre habilidades da vaga e o texto do seu currículo.
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick Metrics list -->
+          <div class="pt-4 border-t border-slate-100 space-y-2 text-xs">
+            <div class="flex justify-between text-slate-600">
+              <span>Palavras-chave da vaga:</span>
+              <strong id="metric-total-job-keywords" class="font-semibold text-slate-800">0</strong>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Habilidades correspondentes:</span>
+              <strong id="metric-matched-keywords" class="font-semibold text-emerald-600">0</strong>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Habilidades faltantes:</span>
+              <strong id="metric-missing-keywords" class="font-semibold text-rose-600">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- * Palavras-chave: Duas listas (Cards) - Encontradas e Faltantes * -->
+        <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Card 1: Palavras-chave Encontradas (verde) -->
+          <div class="bg-white rounded-lg border border-emerald-200/80 shadow-sm p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  Palavras-chave Encontradas
+                </h3>
+                <span id="found-count-badge" class="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">
+                  0
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">
+                Termos presentes tanto na descrição da vaga quanto no seu currículo:
+              </p>
+              <div id="found-keywords-list" class="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto pr-1">
+                <!-- Dynamically populated tags (Green) -->
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-emerald-100 text-[11px] text-emerald-700 flex items-center gap-1.5">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Esses termos foram preservados e destacados no currículo otimizado.</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Palavras-chave Faltantes (vermelho/laranja) -->
+          <div class="bg-white rounded-lg border border-amber-200/80 shadow-sm p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                  Palavras-chave Faltantes
+                </h3>
+                <span id="missing-count-badge" class="px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
+                  0
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mb-3">
+                Termos exigidos pela vaga que não constam no seu currículo:
+              </p>
+              <div id="missing-keywords-list" class="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto pr-1">
+                <!-- Dynamically populated tags (Red/Amber) -->
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-amber-100 text-[11px] text-amber-800 flex items-start gap-1.5">
+              <i data-lucide="info" class="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-600"></i>
+              <span>Adicione apenas se você tiver vivência real com esses itens. Nunca invente experiências!</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- * Currículo Otimizado: Área de texto rico com botão Exportar para PDF * -->
+      <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+        
+        <!-- Toolbar da Área de Resultado -->
+        <div class="bg-slate-50/80 border-b border-slate-200 px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900">
+              Currículo Otimizado (Versão ATS-Friendly)
+            </h3>
+            <span class="text-[11px] font-medium bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+              Formato Padrão ATS
+            </span>
+          </div>
+
+          <!-- Actions: Export PDF & Copy -->
+          <div class="flex items-center gap-2">
+            <button
+              id="btn-copy-resume"
+              type="button"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg shadow-2xs transition-colors cursor-pointer"
+            >
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span id="copy-text">Copiar Texto</span>
+            </button>
+
+            <!-- Botão Exportar para PDF solicitado no prompt -->
+            <button
+              id="btn-export-pdf"
+              type="button"
+              class="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-xs hover:shadow transition-all cursor-pointer"
+            >
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Exportar para PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Informative bar above preview -->
+        <div class="px-5 py-2.5 bg-blue-50/40 border-b border-blue-100/60 flex items-center justify-between text-xs text-blue-900">
+          <div class="flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span>Reestruturado com verbos de ação, termos-chave alinhados e hierarquia limpa legível por robôs ATS.</span>
+          </div>
+          <span class="text-[11px] text-slate-500 italic hidden md:inline">Você pode editar diretamente o texto abaixo antes de exportar</span>
+        </div>
+
+        <!-- Rich Text / ATS Printable Container (Editable) -->
+        <div class="p-6 sm:p-8 bg-white min-h-[500px]">
+          <div
+            id="optimized-resume-content"
+            contenteditable="true"
+            class="prose max-w-none text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-300 rounded p-4 font-sans leading-relaxed resume-document"
+          >
+            <!-- Content will be injected dynamically -->
+          </div>
+        </div>
+
+        <!-- Footer Notice within card -->
+        <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+          <span>Dica ATS: Mantenha fontes legíveis (Arial, Calibri, Inter), sem colunas complexas ou tabelas invisíveis.</span>
+          <span class="font-medium text-slate-600">Padrão A4 Internacional</span>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- RODAPÉ                                                               -->
+  <!-- ===================================================================== -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <i data-lucide="file-check" class="w-4 h-4 text-blue-600"></i>
+        <span><strong>Otimizador de Currículos ATS Friendly</strong> &mdash; Vibe Coding com Tailwind CSS & shadcn/ui aesthetic</span>
+      </div>
+      <div>
+        <span>Construído para maximizar aprovação técnica sem comprometer a verdade profissional.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
